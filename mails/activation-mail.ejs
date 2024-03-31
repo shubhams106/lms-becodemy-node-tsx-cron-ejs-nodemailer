@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Activation Email</title>
+  </head>
+  <body>
+    <h1>Welcome, <%= user.name %>!</h1>
+    <p>
+      Thank you for signing up! To activate your account, please use the
+      following activation code:
+    </p>
+    <h2><%= activationCode %></h2>
+    <p>
+      Please enter this activation code in the appropriate field on our website
+      to activate your account.
+    </p>
+    <p>If you didn't sign up for an account, please disregard this email.</p>
+    <p>
+      Regards,<br />
+      Your Website Team
+    </p>
+  </body>
+</html>
