@@ -6,6 +6,7 @@ import jwt, { Secret } from "jsonwebtoken";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
+import { sendToken } from "../utils/jwt";
 require("dotenv").config();
 interface IregisterUser {
   name: string;
@@ -112,6 +113,47 @@ export const activateUser = CatchAsyncError(
         success: true,
       });
     } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+interface Ilogin {
+  email: string;
+  password: string;
+}
+export const loginUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, password } = req.body as Ilogin;
+      if (!email || !password) {
+        return next(new ErrorHandler("both email and password req", 400));
+      }
+      const user = await userModel.findOne({ email }).select("+password");
+      if (!user) {
+        return next(new ErrorHandler("user doesn't exist", 400));
+      }
+      const isPasswordCorrect = await user.comparePassword(password);
+      if (!isPasswordCorrect) {
+        return next(new ErrorHandler("email or password iss incorrectt.", 400));
+      }
+      sendToken(user, 200, res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const logout = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.cookie("access_token", "", { maxAge: 1 });
+      res.cookie("refresh_token", "", { maxAge: 1 });
+      res.status(200).json({
+        sucess: true,
+        message: "Logged out sucessfully",
+      });
+    } catch (error) {
       return next(new ErrorHandler(error.message, 400));
     }
   }
