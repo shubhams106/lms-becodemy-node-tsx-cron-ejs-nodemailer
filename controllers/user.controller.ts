@@ -75,7 +75,7 @@ export const createActivationToken = (user: any): IactivationToken => {
       user,
       activationCode,
     },
-    process.env.ACTIVATION_SECRET as Secret,
+    process.env.ACTIVATION_SECRET!,
     {
       expiresIn: "5m",
     }
@@ -153,7 +153,7 @@ export const logout = CatchAsyncError(
         sucess: true,
         message: "Logged out sucessfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
     }
   }
