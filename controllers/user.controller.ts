@@ -7,6 +7,7 @@ import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
 import { sendToken } from "../utils/jwt";
+import { redis } from "../utils/redis";
 require("dotenv").config();
 interface IregisterUser {
   name: string;
@@ -149,6 +150,7 @@ export const logout = CatchAsyncError(
     try {
       res.cookie("access_token", "", { maxAge: 1 });
       res.cookie("refresh_token", "", { maxAge: 1 });
+      redis.del(req.user?._id);
       res.status(200).json({
         sucess: true,
         message: "Logged out sucessfully",
