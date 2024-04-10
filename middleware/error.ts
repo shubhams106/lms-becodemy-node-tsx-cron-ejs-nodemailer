@@ -25,14 +25,14 @@ export const ErrorMiddleWare = (
   // wrong jwt error
 
   if (err.name === "JsonWebTokenError") {
-    const message = ` jwt token is invalid plzzz trryy again`;
+    const message = ` jwt token is invalid plzzzzzzzzzz trryy again`;
     err = new ErrorHandler(message, 400);
   }
 
   // jwt expired token
 
   if (err.name === "TokenExpiredError") {
-    const message = ` jwt token is expired. plzzz trryy again`;
+    const message = ` jwt token is expired. plzzz trryyyyyyyyyy again`;
     err = new ErrorHandler(message, 400);
   }
 

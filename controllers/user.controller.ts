@@ -12,6 +12,7 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
+import cloudinary from "cloudinary";
 import { getUserById } from "../services/user.service";
 require("dotenv").config();
 interface IregisterUser {
@@ -307,6 +308,51 @@ export const updatePassword = CatchAsyncError(
       user.password = newPassword;
       await user.save();
       await redis.set(req.user?._id, JSON.stringify(user));
+      res.status(201).json({
+        success: true,
+        user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const updateProfilePicture = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { avatar } = req.body;
+      const userId = req.user?._id;
+      const user = await userModel.findById(userId);
+      if (!avatar) {
+        return next(new ErrorHandler("avatar is needed", 400));
+      }
+
+      if (!user) {
+        return next(new ErrorHandler("user doesnot exissttt", 400));
+      }
+      if (user?.avatar?.public_id) {
+        await cloudinary.v2.uploader.destroy(user?.avatar?.public_id);
+        const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+          folder: "avatars",
+          width: 150,
+        });
+        user.avatar = {
+          public_id: myCloud.public_id,
+          url: myCloud.secure_url,
+        };
+      } else {
+        const myCloud = await cloudinary.v2.uploader.upload(avatar, {
+          folder: "avatars",
+          width: 150,
+        });
+        user.avatar = {
+          public_id: myCloud.public_id,
+          url: myCloud.secure_url,
+        };
+      }
+      await user.save();
+      await redis.set(userId, JSON.stringify(user));
       res.status(201).json({
         success: true,
         user,
