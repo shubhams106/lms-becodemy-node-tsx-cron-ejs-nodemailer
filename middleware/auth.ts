@@ -1,9 +1,8 @@
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextFunction, Response, Request } from "express";
 import ErrorHandler from "../utils/ErrorHandler";
 import { CatchAsyncError } from "./CatchAsyncErrors";
 import { redis } from "../utils/redis";
-import { json } from "stream/consumers";
 require("dotenv").config();
 export const isAuthenticated = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {

@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
 import userModel, { IUser } from "../models/user.model";
-import jwt, { JwtPayload, JwtPayload, Secret } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
@@ -12,6 +12,7 @@ import {
   sendToken,
 } from "../utils/jwt";
 import { redis } from "../utils/redis";
+import { getUserById } from "../services/user.service";
 require("dotenv").config();
 interface IregisterUser {
   name: string;
@@ -198,11 +199,117 @@ export const updateAccessToken = CatchAsyncError(
           expiresIn: "3d",
         }
       );
+      req.user = user;
+      if (process.env.Node_ENV === "production") {
+        accessTokenOptions.secure = true;
+        refreshTokenOptions.secure = true;
+      }
+
       res.cookie("access_token", accessToken, accessTokenOptions);
       res.cookie("refresh_token", refreshToken, refreshTokenOptions);
       res.status(200).json({
         status: "successs",
         accessToken,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const getUserInfo = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id;
+      getUserById(userId, res);
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const socialAuth = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, name, avatar } = req.body;
+      if (!email || !name) {
+        return next(new ErrorHandler("email and name are required", 400));
+      }
+      const user = await userModel.findOne({ email });
+      if (!user) {
+        const newUser = await userModel.create({ email, name, avatar });
+        sendToken(newUser, 200, res);
+      } else {
+        sendToken(user, 200, res);
+      }
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const updateUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, name } = req.body;
+      const userId = req.user?._id;
+      const user = await userModel.findById(userId);
+
+      if (email && user) {
+        const isEmailExists = await userModel.findOne({ email });
+        if (isEmailExists) {
+          return next(new ErrorHandler("email already existsss", 400));
+        }
+        user.email = email;
+      }
+      if (user && name) {
+        user.name = name;
+      }
+      await user?.save();
+      await redis.set(user?._id, JSON.stringify(user));
+      res.status(201).json({
+        success: true,
+        user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+export const updatePassword = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) {
+        return next(new ErrorHandler("plzzz plovide req params", 400));
+      }
+      const user = await userModel.findById(req.user?._id).select("+password");
+      if (!user) {
+        return next(new ErrorHandler("user doesnott existt", 400));
+      }
+      if (user.password === undefined) {
+        return next(
+          new ErrorHandler(
+            "cant change password for social auth created users",
+            400
+          )
+        );
+      }
+      const isPasswordMatch = await user.comparePassword(oldPassword);
+      if (!isPasswordMatch) {
+        return next(new ErrorHandler("plzzzz provide shi password yrr", 400));
+      }
+      if (oldPassword === newPassword) {
+        return next(
+          new ErrorHandler("old and new password should not be same", 400)
+        );
+      }
+      user.password = newPassword;
+      await user.save();
+      await redis.set(req.user?._id, JSON.stringify(user));
+      res.status(201).json({
+        success: true,
+        user,
       });
     } catch (error: any) {
       return next(new ErrorHandler(error.message, 400));
