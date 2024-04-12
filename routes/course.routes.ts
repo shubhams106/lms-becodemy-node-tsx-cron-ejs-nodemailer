@@ -8,6 +8,7 @@ import {
   getAllCourses,
   getCourseByUser,
   getSingleCourse,
+  reviewCourse,
   uploadCourse,
 } from "../controllers/course.controller";
 
@@ -43,5 +44,11 @@ courseRouter.post(
   isAuthenticated,
   // authorizeRoles("admin"),
   addAnswer
+);
+courseRouter.put(
+  "/review/:id",
+  isAuthenticated,
+  // authorizeRoles("admin"),
+  reviewCourse
 );
 export default courseRouter;

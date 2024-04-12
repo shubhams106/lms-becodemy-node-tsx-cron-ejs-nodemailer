@@ -130,8 +130,6 @@ export const getCourseByUser = CatchAsyncError(
     try {
       const userCourses = req.user?.courses;
       const courseId = req.params.id;
-      console.log({ userCourses });
-      console.log({ courseId });
       const isCourseExists = userCourses?.find(
         (item: any) => item._id.toString() === courseId
       );
@@ -246,6 +244,61 @@ export const addAnswer = CatchAsyncError(
           return next(new ErrorHandler(error.message, 400));
         }
       }
+      res.status(201).json({
+        success: true,
+        course,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+interface IAddReviewData {
+  rating: number;
+  comment: string;
+}
+
+export const reviewCourse = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { rating, comment } = req.body as IAddReviewData;
+      if (!rating || !comment) {
+        return next(
+          new ErrorHandler("please provide both comment and rating", 400)
+        );
+      }
+      const user = req.user;
+      const courseId = req.params.id;
+      const userCourseList = user?.courses;
+      const isCourseExist = userCourseList?.some(
+        (item: any) => item._id.toString() === courseId
+      );
+      if (!isCourseExist) {
+        return next(
+          new ErrorHandler(
+            "you can only rate products which you have bought",
+            400
+          )
+        );
+      }
+      const course = await CourseModel.findById(courseId);
+      const reviewData: any = {
+        user,
+        rating,
+        comment,
+      };
+      course?.reviews.push(reviewData);
+      let avg = 0;
+      course?.reviews.length! > 0 &&
+        course?.reviews.forEach((item) => (avg += item.rating));
+      if (course) {
+        course.ratings = avg / course?.reviews.length;
+      }
+      await course?.save();
+      const notification = {
+        title: "New Review Received",
+        message: `${user!.name} has given a review in ${course?.name}`,
+      };
       res.status(201).json({
         success: true,
         course,

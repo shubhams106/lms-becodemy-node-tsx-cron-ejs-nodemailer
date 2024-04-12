@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from "express";
 import { CatchAsyncError } from "../middleware/CatchAsyncErrors";
 import ErrorHandler from "../utils/ErrorHandler";
 import userModel, { IUser } from "../models/user.model";
-import jwt, { JwtPayload, Secret } from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import ejs from "ejs";
 import path from "path";
 import sendMail from "../utils/sendMail";
