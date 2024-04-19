@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import {
   activateUser,
+  getAllUsers,
   getUserInfo,
   loginUser,
   logout,
@@ -24,5 +25,11 @@ userRouter.post("/social-auth", socialAuth);
 userRouter.put("/update-info", isAuthenticated, updateUser);
 userRouter.put("/update-password", isAuthenticated, updatePassword);
 userRouter.put("/update-pic", isAuthenticated, updateProfilePicture);
+userRouter.get(
+  "/getAllUsers",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllUsers
+);
 
 export default userRouter;

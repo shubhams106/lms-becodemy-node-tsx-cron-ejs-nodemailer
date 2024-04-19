@@ -78,6 +78,20 @@ export const createOrder = CatchAsyncError(
   }
 );
 
+export const getAllOrders = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const orders = await OrderModel.find().sort({ createdAt: -1 });
+      res.status(201).json({
+        success: true,
+        orders,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
 // export const uploadCourse = CatchAsyncError(
 //   async (req: Request, res: Response, next: NextFunction) => {
 //     try {

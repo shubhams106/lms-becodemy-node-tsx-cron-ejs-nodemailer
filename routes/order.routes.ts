@@ -1,7 +1,7 @@
 import express, { Router } from "express";
 
 import { authorizeRoles, isAuthenticated } from "../middleware/auth";
-import { createOrder } from "../controllers/order.controller";
+import { createOrder, getAllOrders } from "../controllers/order.controller";
 
 const orderRouter = Router();
 orderRouter.post(
@@ -9,6 +9,12 @@ orderRouter.post(
   isAuthenticated,
   //   authorizeRoles("admin"),
   createOrder
+);
+orderRouter.get(
+  "/getAllOrders",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  getAllOrders
 );
 
 export default orderRouter;
