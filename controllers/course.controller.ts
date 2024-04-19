@@ -18,6 +18,7 @@ import { url } from "inspector";
 import { createCourse } from "../services/course.service";
 import CourseModel from "../models/course.modal";
 import mongoose from "mongoose";
+import NotificationModel from "../models/notification.model";
 require("dotenv").config();
 
 export const uploadCourse = CatchAsyncError(
@@ -175,6 +176,13 @@ export const addQuestion = CatchAsyncError(
       };
       courseContent.questions.push(newQuestion);
       await course?.save();
+      await NotificationModel.create({
+        title: "new question asked",
+        message: `${user!.name} asked a new question on ${course!.name}, ${
+          courseContent?.title
+        }`,
+        user: req.user?._id,
+      });
       res.status(201).json({
         success: true,
         course,
@@ -220,6 +228,11 @@ export const addAnswer = CatchAsyncError(
           course,
         });
         // send notification
+        await NotificationModel.create({
+          title: "new answer received",
+          message: `${user!.name} answered on  ${courseContent?.title}`,
+          user: req.user?._id,
+        });
       } else {
         const data = {
           answer,

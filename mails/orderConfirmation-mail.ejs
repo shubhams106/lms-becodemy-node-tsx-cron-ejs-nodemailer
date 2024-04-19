@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Confirmation</title>
+  </head>
+  <body>
+    <div>
+      <h1>Order Confirmation</h1>
+      <p>Thank you for your order!</p>
+      <p>Here are the details of your order:</p>
+      <ul>
+        <li><strong>Order ID:</strong> <%= order._id %></li>
+        <li><strong>Course Name:</strong> <%= order.name %></li>
+        <li><strong>Price:</strong> <%= order.price %></li>
+        <li><strong>Date:</strong> <%= order.date %></li>
+      </ul>
+    </div>
+  </body>
+</html>
