@@ -70,7 +70,7 @@ export const editCourse = CatchAsyncError(
     }
   }
 );
-
+// for everyone without purchasing
 export const getSingleCourse = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -124,7 +124,7 @@ export const getAllCourses = CatchAsyncError(
     }
   }
 );
-
+//user purchased courses
 export const getCourseByUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -299,6 +299,44 @@ export const reviewCourse = CatchAsyncError(
         title: "New Review Received",
         message: `${user!.name} has given a review in ${course?.name}`,
       };
+      res.status(201).json({
+        success: true,
+        course,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const addReplyToReview = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { courseId, reviewId, comment } = req.body;
+      if (!courseId || !reviewId || !comment) {
+        return next(
+          new ErrorHandler("course, comment and review all required", 400)
+        );
+      }
+      const course = await CourseModel.findById(courseId);
+      if (!course) {
+        return next(new ErrorHandler("course not found", 400));
+      }
+      const review = course.reviews.find(
+        (item: any) => item._id.toString() === reviewId
+      );
+      if (!review) {
+        return next(new ErrorHandler("reviewww not found", 400));
+      }
+      const replyData: any = {
+        user: req.user,
+        comment,
+      };
+      if (!review.commentReplies) {
+        review.commentReplies = [];
+      }
+      review.commentReplies?.push(replyData);
+      await course.save();
       res.status(201).json({
         success: true,
         course,

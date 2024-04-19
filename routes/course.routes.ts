@@ -4,6 +4,7 @@ import { authorizeRoles, isAuthenticated } from "../middleware/auth";
 import {
   addAnswer,
   addQuestion,
+  addReplyToReview,
   editCourse,
   getAllCourses,
   getCourseByUser,
@@ -50,5 +51,12 @@ courseRouter.put(
   isAuthenticated,
   // authorizeRoles("admin"),
   reviewCourse
+);
+
+courseRouter.post(
+  "/review-reply",
+  isAuthenticated,
+  authorizeRoles("admin"),
+  addReplyToReview
 );
 export default courseRouter;
