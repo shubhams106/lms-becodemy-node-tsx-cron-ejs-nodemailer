@@ -372,3 +372,50 @@ export const getAllUsers = CatchAsyncError(
     }
   }
 );
+
+export const updateUserRole = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { role, id } = req.body;
+      if (!role || !id) {
+        return next(new ErrorHandler("role and id  not found", 400));
+      }
+      const user = await userModel.findById(id);
+      if (!user) {
+        return next(new ErrorHandler("galat id bhaii", 400));
+      }
+      await userModel.findByIdAndUpdate(id, { role }, { new: true });
+      await redis.set(id, JSON.stringify(user));
+
+      res.status(201).json({
+        success: true,
+        user,
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
+
+export const deleteUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.body;
+      if (!id) {
+        return next(new ErrorHandler("userrrr id  not found", 400));
+      }
+      const user = await userModel.findById(id);
+      if (!user) {
+        return next(new ErrorHandler("galat id bhaii", 400));
+      }
+      await userModel.findByIdAndDelete(id);
+      await redis.del(id);
+      res.status(200).json({
+        success: true,
+        message: "user deleted successfully",
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
