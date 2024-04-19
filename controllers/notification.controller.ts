@@ -77,3 +77,22 @@ cron.schedule("0 0 0 * * *", async () => {
   });
   console.log("after every 5 sec love del read notifications");
 });
+
+cron.schedule("*/5 * * * * *", async () => {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() + 1); // added 1 day
+  // for (let i = 11; i >= 0; i--) {
+  //   const endDate = new Date(
+  //     currentDate.getFullYear(),
+  //     currentDate.getMonth(),
+  //     currentDate.getDate() - i * 28
+  //   );
+  //   const startDate = new Date(
+  //     endDate.getFullYear(),
+  //     endDate.getMonth(),
+  //     endDate.getDate() - i * 28
+  //   );
+  //   console.log({ endDate, startDate });
+  // }
+  console.log({ currentDate }, "hhhhhhhhhhvghjk");
+});

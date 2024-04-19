@@ -373,3 +373,26 @@ export const getAllCoursess = CatchAsyncError(
     }
   }
 );
+
+export const deleteCourse = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.body;
+      if (!id) {
+        return next(new ErrorHandler("course id  not found", 400));
+      }
+      const course = await CourseModel.findById(id);
+      if (!course) {
+        return next(new ErrorHandler("galat id bhaii", 400));
+      }
+      await CourseModel.findByIdAndDelete(id);
+      await redis.del(id);
+      res.status(200).json({
+        success: true,
+        message: "courseee deleted successfully",
+      });
+    } catch (error: any) {
+      return next(new ErrorHandler(error.message, 400));
+    }
+  }
+);
